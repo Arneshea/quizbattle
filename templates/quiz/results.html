@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Results{% endblock %}
+{% block width %}720px{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h3 class="mb-0">Results: {{ session.quiz.title }}</h3>
+        <span class="text-muted">Room {{ session.room_code }} &middot; {{ session.started_at|date:"d M Y, H:i" }}</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'export_csv' session.id %}">Download CSV</a>
+        <a class="btn btn-primary" href="{% url 'export_pdf' session.id %}">Download PDF</a>
+    </div>
+</div>
+<div class="card p-0">
+<table class="table table-striped mb-0">
+    <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Correct</th><th>Answered</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+        <tr><td>{{ r.rank }}</td><td>{{ r.name }}</td><td>{{ r.score }}</td>
+            <td>{{ r.correct }}/{{ r.total }}</td><td>{{ r.answered }}/{{ r.total }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">Nobody joined this session.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<a href="{% url 'dashboard' %}" class="btn btn-link mt-3">&larr; Back to my quizzes</a>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Question {{ question_number }}{% endblock %}
+{% block width %}560px{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-2">
+    <span>Player: <strong>{{ participant.name }}</strong></span>
+    <span>Score: <strong id="score">{{ participant.score }}</strong></span>
+</div>
+<div class="progress mb-3"><div class="progress-bar" style="width: {% widthratio question_number total_questions 100 %}%"></div></div>
+
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted">Question {{ question_number }} / {{ total_questions }}</span>
+        <span class="timer-badge" id="timer">{{ remaining }}</span>
+    </div>
+    <h5 class="mb-3">{{ question.text }}</h5>
+
+    <div class="d-grid gap-2" id="options">
+        <button class="btn btn-outline-primary option-btn" data-option="A">A. {{ question.option_a }}</button>
+        <button class="btn btn-outline-primary option-btn" data-option="B">B. {{ question.option_b }}</button>
+        <button class="btn btn-outline-primary option-btn" data-option="C">C. {{ question.option_c }}</button>
+        <button class="btn btn-outline-primary option-btn" data-option="D">D. {{ question.option_d }}</button>
+    </div>
+    <div id="result" class="mt-3"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const sessionId = {{ session.id }};
+    const questionId = {{ question.id }};
+    const startingIndex = {{ session.current_question_index }};
+    const alreadyAnswered = {{ answer|yesno:"true,false" }};
+    const previousChoice = "{{ answer.selected_option|default:'' }}";
+    const previousCorrect = {{ answer.is_correct|yesno:"true,false" }};
+    const correctOption = "{{ question.correct_option }}";
+
+    const buttons = document.querySelectorAll('.option-btn');
+    const resultBox = document.getElementById('result');
+    const timerEl = document.getElementById('timer');
+    let answered = alreadyAnswered;
+    let timeUp = false;
+
+    function lockButtons() { buttons.forEach(b => b.disabled = true); }
+
+    function reveal(chosen) {
+        buttons.forEach(b => {
+            if (b.dataset.option === correctOption) b.classList.add('correct');
+            else if (b.dataset.option === chosen) b.classList.add('wrong');
+        });
+    }
+
+    // --- countdown: starts from the SERVER's remaining seconds, so phone clocks don't matter
+    let remaining = {{ remaining }};
+    const t0 = performance.now();
+    const start = remaining;
+    function tick() {
+        remaining = Math.max(0, Math.ceil(start - (performance.now() - t0) / 1000));
+        timerEl.textContent = remaining;
+        timerEl.classList.toggle('low', remaining <= 5);
+        if (remaining <= 0 && !timeUp) {
+            timeUp = true;
+            lockButtons();
+            if (!answered) {
+                resultBox.innerHTML = '<div class="alert alert-warning mb-0">Time\'s up! Waiting for the host...</div>';
+                reveal(null);
+            }
+        }
+    }
+    tick();
+    setInterval(tick, 250);
+
+    // --- restore state if the page was refreshed after answering
+    if (alreadyAnswered) {
+        lockButtons();
+        reveal(previousChoice);
+        resultBox.innerHTML = previousCorrect
+            ? '<div class="alert alert-success mb-0">Correct! Waiting for the next question...</div>'
+            : '<div class="alert alert-danger mb-0">Not quite. Waiting for the next question...</div>';
+    }
+
+    // --- submit answer via AJAX
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (answered || timeUp) return;
+            answered = true;
+            lockButtons();
+            const chosen = this.dataset.option;
+            this.classList.add('chosen');
+
+            fetch(`/play/${sessionId}/answer/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: `question_id=${questionId}&selected_option=${chosen}`,
+            })
+            .then(res => res.json().then(data => ({ok: res.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    resultBox.innerHTML = `<div class="alert alert-warning mb-0">${esc(data.error)}</div>`;
+                    return;
+                }
+                reveal(chosen);
+                document.getElementById('score').textContent = data.new_score;
+                resultBox.innerHTML = data.correct
+                    ? `<div class="alert alert-success mb-0">Correct! +${data.points} points. Waiting for the next question...</div>`
+                    : `<div class="alert alert-danger mb-0">Wrong. Correct answer: ${data.correct_option}. Waiting for the next question...</div>`;
+            })
+            .catch(() => {
+                answered = false;
+                buttons.forEach(b => b.disabled = false);
+                resultBox.innerHTML = '<div class="alert alert-warning mb-0">Connection problem, try again.</div>';
+            });
+        });
+    });
+
+    // --- poll: reload when the host moves on or finishes the quiz
+    setInterval(() => {
+        fetch(`/status/${sessionId}/`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.finished || d.current_question_index !== startingIndex) location.reload();
+            }).catch(() => {});
+    }, 2000);
+</script>
+{% endblock %}

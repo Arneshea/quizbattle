@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ quiz.title }}{% endblock %}
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card p-4 mb-3">
+        <h4 class="mb-3">Edit quiz</h4>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Title</label>{{ form.title }}
+                {% for e in form.title.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+            <div class="col-md-6"><label class="form-label">Description</label>{{ form.description }}</div>
+        </div>
+    </div>
+
+    <h5>Questions</h5>
+    {{ formset.management_form }}
+    {% for e in formset.non_form_errors %}<div class="alert alert-danger">{{ e }}</div>{% endfor %}
+    <div id="question-forms">
+    {% for f in formset %}
+        <div class="card p-3 mb-3 question-form">
+            {{ f.id }}
+            {% if f.errors %}<div class="alert alert-danger py-1 small">Please fix the highlighted fields.</div>{% endif %}
+            <div class="mb-2">{{ f.text }}{% for e in f.text.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+            <div class="row g-2 mb-2">
+                <div class="col-md-6">{{ f.option_a }}</div>
+                <div class="col-md-6">{{ f.option_b }}</div>
+                <div class="col-md-6">{{ f.option_c }}</div>
+                <div class="col-md-6">{{ f.option_d }}</div>
+            </div>
+            <div class="row g-2 align-items-end">
+                <div class="col-6 col-md-4"><label class="form-label small mb-0">Correct answer</label>{{ f.correct_option }}</div>
+                <div class="col-6 col-md-4"><label class="form-label small mb-0">Seconds</label>{{ f.time_limit_seconds }}
+                    {% for e in f.time_limit_seconds.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+                {% if f.instance.pk %}
+                <div class="col-12 col-md-4 text-md-end">
+                    <label class="form-check-label text-danger small">{{ f.DELETE }} Delete this question</label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary">Save quiz</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back</a>
+    </div>
+</form>
+
+<form method="post" action="{% url 'quiz_delete' quiz.id %}" class="mt-4"
+      onsubmit="return confirm('Delete this whole quiz?');">
+    {% csrf_token %}
+    <button class="btn btn-outline-danger btn-sm">Delete quiz</button>
+</form>
+<p class="text-muted small mt-3">Tip: save, and a fresh empty question row appears at the bottom so you can keep adding.</p>
+{% endblock %}

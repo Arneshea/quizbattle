@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}My quizzes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">My quizzes</h3>
+    <a href="{% url 'quiz_create' %}" class="btn btn-primary">+ New quiz</a>
+</div>
+
+<input type="search" id="search" class="form-control mb-3" placeholder="Search your quizzes (live)..." autocomplete="off">
+
+<div id="quiz-list" class="row g-3">
+    {% for q in quizzes %}
+    <div class="col-md-6">
+        <div class="card p-3 h-100">
+            <h5>{{ q.title }}</h5>
+            <p class="text-muted small mb-2">{{ q.description|default:"No description" }}</p>
+            <p class="small mb-3">{{ q.q_count }} question{{ q.q_count|pluralize }} &middot; {{ q.created_at|date:"d M Y" }}</p>
+            <div class="d-flex gap-2 mt-auto">
+                <form method="post" action="{% url 'session_create' q.id %}">{% csrf_token %}
+                    <button class="btn btn-success btn-sm">Host live</button></form>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'quiz_edit' q.id %}">Edit</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No quizzes yet. Create your first one!</p>
+    {% endfor %}
+</div>
+
+<h5 class="mt-5">Recent sessions</h5>
+<div class="card p-0">
+<table class="table mb-0">
+    <thead><tr><th>Quiz</th><th>Room</th><th>Status</th><th>Players</th><th></th></tr></thead>
+    <tbody>
+    {% for s in sessions %}
+        <tr>
+            <td>{{ s.quiz.title }}</td>
+            <td><code>{{ s.room_code }}</code></td>
+            <td>{% if s.is_finished %}Finished{% elif s.has_started %}Running{% else %}Lobby{% endif %}</td>
+            <td>{{ s.participants.count }}</td>
+            <td class="text-end">
+                {% if s.is_finished %}<a href="{% url 'results' s.id %}" class="btn btn-sm btn-outline-secondary">Results</a>
+                {% else %}<a href="{% url 'host_dashboard' s.id %}" class="btn btn-sm btn-outline-primary">Open</a>{% endif %}
+            </td>
+        </tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">No sessions yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const list = document.getElementById('quiz-list');
+    const csrf = getCookie('csrftoken');
+    let timer = null;
+
+    function render(results) {
+        if (!results.length) {
+            list.innerHTML = '<p class="text-muted">No quizzes match your search.</p>';
+            return;
+        }
+        list.innerHTML = results.map(q => `
+            <div class="col-md-6"><div class="card p-3 h-100">
+                <h5>${esc(q.title)}</h5>
+                <p class="text-muted small mb-2">${esc(q.description || 'No description')}</p>
+                <p class="small mb-3">${q.q_count} question${q.q_count === 1 ? '' : 's'} &middot; ${esc(q.created)}</p>
+                <div class="d-flex gap-2 mt-auto">
+                    <form method="post" action="/quizzes/${q.id}/host/">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf}">
+                        <button class="btn btn-success btn-sm">Host live</button></form>
+                    <a class="btn btn-outline-primary btn-sm" href="/quizzes/${q.id}/edit/">Edit</a>
+                </div>
+            </div></div>`).join('');
+    }
+
+    document.getElementById('search').addEventListener('input', function () {
+        clearTimeout(timer);
+        const q = this.value;
+        timer = setTimeout(() => {
+            fetch(`{% url 'quiz_search' %}?q=${encodeURIComponent(q)}`)
+                .then(r => r.json()).then(d => render(d.results));
+        }, 200);   // small debounce so we don't fire on every keystroke
+    });
+</script>
+{% endblock %}

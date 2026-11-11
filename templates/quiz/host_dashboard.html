@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Host: {{ session.quiz.title }}{% endblock %}
+{% block width %}720px{% endblock %}
+{% block content %}
+<div class="card p-4 text-center mb-3">
+    <div class="text-muted">Join at <strong>{{ join_url }}</strong> with room code</div>
+    <div class="room-code">{{ session.room_code }}</div>
+    <div class="text-muted"><span id="players">{{ session.participants.count }}</span> player(s) joined</div>
+</div>
+
+<div id="control-area">
+{% if not session.has_started %}
+    <form method="post" action="{% url 'start_quiz' session.id %}" class="mb-3">
+        {% csrf_token %}
+        <button class="btn btn-success btn-lg w-100">Start quiz</button>
+    </form>
+{% elif session.is_finished %}
+    <div class="alert alert-success">Quiz finished!
+        <a href="{% url 'results' session.id %}" class="alert-link">View results &amp; export</a></div>
+{% else %}
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <strong>Question {{ session.current_question_index|add:1 }} / {{ total_questions }}</strong>
+            <span class="timer-badge" id="timer">{{ remaining }}</span>
+        </div>
+        <p class="my-2 fs-5">{{ question.text }}</p>
+        <p class="small text-muted mb-2">Correct answer: <strong>{{ question.correct_option }}</strong>
+            &middot; Answered: <strong><span id="answered">0</span>/<span id="players2">{{ session.participants.count }}</span></strong></p>
+        <div class="d-flex gap-2">
+            <form method="post" action="{% url 'next_question' session.id %}" class="flex-grow-1">
+                {% csrf_token %}
+                <button class="btn btn-primary w-100">
+                    {% if session.current_question_index|add:1 >= total_questions %}Finish quiz{% else %}Next question{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'end_session' session.id %}" onsubmit="return confirm('End the quiz now?');">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger">End now</button>
+            </form>
+        </div>
+    </div>
+{% endif %}
+</div>
+
+<h5>Live leaderboard</h5>
+<div class="card p-0">
+<table class="table mb-0">
+    <thead><tr><th style="width:60px">#</th><th>Name</th><th class="text-end">Score</th></tr></thead>
+    <tbody id="leaderboard-body">
+    {% for p in leaderboard %}
+        <tr class="{% if forloop.first and p.score %}lb-row-1{% endif %}"><td>{{ forloop.counter }}</td><td>{{ p.name }}</td><td class="text-end">{{ p.score }}</td></tr>
+    {% empty %}
+        <tr><td colspan="3" class="text-muted">Waiting for players...</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const sessionId = {{ session.id }};
+    const startedAtLoad = {{ session.has_started|yesno:"true,false" }};
+    const indexAtLoad = {{ session.current_question_index }};
+    const timerEl = document.getElementById('timer');
+
+    // countdown synced to the server value on every poll
+    let remaining = {{ remaining }};
+    let syncedAt = performance.now();
+    setInterval(() => {
+        if (!timerEl) return;
+        const left = Math.max(0, Math.ceil(remaining - (performance.now() - syncedAt) / 1000));
+        timerEl.textContent = left;
+        timerEl.classList.toggle('low', left <= 5);
+    }, 250);
+
+    function poll() {
+        fetch("{% url 'session_status' session.id %}")
+            .then(r => r.json())
+            .then(d => {
+                // lobby/finished/question changed from another tab -> refresh the control area
+                if (d.has_started !== startedAtLoad || d.current_question_index !== indexAtLoad) {
+                    location.reload();
+                    return;
+                }
+                remaining = d.remaining;
+                syncedAt = performance.now();
+                document.getElementById('players').textContent = d.participant_count;
+                const p2 = document.getElementById('players2'); if (p2) p2.textContent = d.participant_count;
+                const ans = document.getElementById('answered'); if (ans) ans.textContent = d.answered_count;
+
+                const tbody = document.getElementById('leaderboard-body');
+                if (!d.leaderboard.length) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-muted">Waiting for players...</td></tr>';
+                } else {
+                    tbody.innerHTML = d.leaderboard.map((p, i) =>
+                        `<tr class="${i === 0 && p.score ? 'lb-row-1' : ''}"><td>${i + 1}</td><td>${esc(p.name)}</td><td class="text-end">${p.score}</td></tr>`
+                    ).join('');
+                }
+            }).catch(() => {});
+    }
+    setInterval(poll, 2000);
+    poll();
+</script>
+{% endblock %}

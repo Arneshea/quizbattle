@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Quiz finished{% endblock %}
+{% block width %}480px{% endblock %}
+{% block content %}
+<div class="card p-4 text-center mb-3">
+    <h3>Quiz complete!</h3>
+    <p class="mb-1">Nice work, {{ participant.name }}.</p>
+    <h2 class="text-primary mb-0">{{ participant.score }} pts</h2>
+    <p class="text-muted">You finished #{{ rank }} of {{ session.participants.count }}</p>
+</div>
+<div class="card p-3">
+    <h6>Top players</h6>
+    <table class="table table-sm mb-0">
+        {% for p in leaderboard %}
+        <tr {% if p.id == participant.id %}class="table-primary"{% endif %}>
+            <td>{{ forloop.counter }}</td><td>{{ p.name }}</td><td class="text-end">{{ p.score }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

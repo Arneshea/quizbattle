@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block width %}560px{% endblock %}
+{% block content %}
+<div class="card p-4">
+    <h4 class="mb-3">{{ title }}</h4>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3"><label class="form-label">Title</label>{{ form.title }}
+            {% for e in form.title.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+        <div class="mb-3"><label class="form-label">Description (optional)</label>{{ form.description }}</div>
+        <button class="btn btn-primary">Create &amp; add questions</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-link">Cancel</a>
+    </form>
+</div>
+{% endblock %}

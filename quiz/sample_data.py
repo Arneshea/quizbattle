@@ -1,0 +1,118 @@
+"""Sample quizzes used by `python manage.py seed_quizzes`.
+
+Each question is (text, option_a, option_b, option_c, option_d, correct_letter).
+Add your own quizzes by appending to SAMPLE_QUIZZES.
+"""
+
+SAMPLE_QUIZZES = [
+    {
+        'title': 'Quick Demo Round',
+        'description': '3 easy questions, 10 seconds each. Good for testing the setup.',
+        'time_limit': 10,
+        'questions': [
+            ("How many days are in a leap year?", "365", "366", "364", "367", "B"),
+            ("Which planet is known as the Red Planet?", "Venus", "Jupiter", "Mars", "Saturn", "C"),
+            ("What is the capital of India?", "Mumbai", "Kolkata", "Chennai", "New Delhi", "D"),
+        ],
+    },
+    {
+        'title': 'Python Basics',
+        'description': 'Core Python syntax and types',
+        'time_limit': 20,
+        'questions': [
+            ("What is the correct file extension for Python files?", ".pyt", ".pt", ".py", ".python", "C"),
+            ("Which keyword defines a function in Python?", "function", "define", "func", "def", "D"),
+            ("What is the type of 10 / 3 in Python 3?", "int", "float", "str", "complex", "B"),
+            ("Which brackets create a list?", "{}", "()", "[]", "<>", "C"),
+            ("What does len() return?", "Number of items in an object", "The last item",
+             "The data type", "Memory size in bytes", "A"),
+            ("What is the output of print(2 ** 3)?", "6", "8", "9", "5", "B"),
+        ],
+    },
+    {
+        'title': 'Django Basics',
+        'description': 'Django concepts from the Full Stack lab',
+        'time_limit': 20,
+        'questions': [
+            ("Which design pattern does Django follow?", "MVC", "MVT", "MVVM", "Observer", "B"),
+            ("Which command creates a new Django project?", "django-admin startproject",
+             "python manage.py newproject", "django new", "python manage.py startapp", "A"),
+            ("Which file usually holds an app's URL routes?", "views.py", "models.py", "urls.py", "admin.py", "C"),
+            ("What does Django's ORM let you do?", "Style web pages", "Query the database using Python objects",
+             "Send emails", "Compile templates to C", "B"),
+            ("Which command applies migrations to the database?", "makemigrations", "migrate",
+             "runserver", "collectstatic", "B"),
+            ("Which template tag protects forms against CSRF attacks?", "{% secure %}", "{% token %}",
+             "{% csrf_token %}", "{% protect %}", "C"),
+            ("Which command starts the development server?", "python manage.py runserver",
+             "python manage.py start", "django-admin run", "python runserver.py", "A"),
+        ],
+    },
+    {
+        'title': 'HTML, CSS & JavaScript',
+        'description': 'Front-end fundamentals',
+        'time_limit': 20,
+        'questions': [
+            ("What does HTML stand for?", "Hyper Text Markup Language", "High Tech Modern Language",
+             "Hyperlinks and Text Markup Language", "Home Tool Markup Language", "A"),
+            ("Which CSS property changes the text colour?", "font-color", "text-style", "color", "foreground", "C"),
+            ("Which HTML tag creates a hyperlink?", "<link>", "<a>", "<href>", "<url>", "B"),
+            ("Which JS keyword declares a block-scoped variable that can be reassigned?",
+             "var", "const", "let", "def", "C"),
+            ("What does AJAX let a page do?", "Load data without a full page reload",
+             "Change the browser theme", "Compile CSS", "Encrypt passwords", "A"),
+            ("Which JS method selects an element by its id?", "querySelectorAll()", "getElementById()",
+             "getElementsByClass()", "findId()", "B"),
+        ],
+    },
+    {
+        'title': 'DBMS & SQL',
+        'description': 'Databases and SQL basics',
+        'time_limit': 25,
+        'questions': [
+            ("Which SQL statement retrieves data from a table?", "GET", "SELECT", "FETCH", "OPEN", "B"),
+            ("What does a primary key do?", "Uniquely identifies each row", "Encrypts the data",
+             "Sorts the table", "Links two databases", "A"),
+            ("Which SQL clause filters individual rows?", "ORDER BY", "GROUP BY", "WHERE", "LIMIT", "C"),
+            ("Which join returns only rows that match in both tables?", "LEFT JOIN", "INNER JOIN",
+             "FULL JOIN", "CROSS JOIN", "B"),
+            ("What does the 'A' in ACID stand for?", "Accuracy", "Atomicity", "Availability", "Aggregation", "B"),
+            ("Which relationship needs a junction (link) table?", "One-to-one", "One-to-many",
+             "Many-to-many", "Self-reference", "C"),
+            ("Which command removes a table and its structure completely?", "DELETE", "TRUNCATE",
+             "DROP TABLE", "REMOVE", "C"),
+        ],
+    },
+    {
+        'title': 'Web & Networking',
+        'description': 'How the web works',
+        'time_limit': 20,
+        'questions': [
+            ("Which protocol is used to load secure websites?", "HTTP", "FTP", "HTTPS", "SMTP", "C"),
+            ("What does DNS do?", "Translates domain names to IP addresses", "Encrypts traffic",
+             "Assigns MAC addresses", "Blocks ads", "A"),
+            ("Which HTTP status code means 'Not Found'?", "200", "301", "500", "404", "D"),
+            ("Which HTTP method is normally used to submit a form that changes data?",
+             "GET", "POST", "HEAD", "TRACE", "B"),
+            ("What is the default port for HTTP?", "21", "443", "80", "25", "C"),
+            ("How many bits are in an IPv4 address?", "16", "32", "64", "128", "B"),
+        ],
+    },
+    {
+        'title': 'DevOps & Git',
+        'description': 'Version control, CI/CD and containers',
+        'time_limit': 20,
+        'questions': [
+            ("Which command saves staged changes to Git history?", "git push", "git add",
+             "git commit", "git clone", "C"),
+            ("What does CI stand for in CI/CD?", "Continuous Integration", "Code Inspection",
+             "Central Infrastructure", "Container Installation", "A"),
+            ("Which tool packages apps into containers?", "Jenkins", "Nginx", "Docker", "Postman", "C"),
+            ("Which command copies a remote repository to your machine?", "git pull", "git clone",
+             "git fetch", "git init", "B"),
+            ("What is Kubernetes mainly used for?", "Writing SQL queries", "Orchestrating containers",
+             "Designing user interfaces", "Compressing files", "B"),
+            ("Which Linux command lists the files in a directory?", "ls", "cd", "pwd", "cat", "A"),
+        ],
+    },
+]

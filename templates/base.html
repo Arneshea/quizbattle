@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Quiz Battle{% endblock %}</title>
+    <link href="{% static 'vendor/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand navbar-dark bg-primary mb-4" style="background:#4f46e5 !important;">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'join_session' %}">Quiz Battle</a>
+        <div class="navbar-nav ms-auto align-items-center gap-2">
+            {% if user.is_authenticated %}
+                <a class="nav-link" href="{% url 'dashboard' %}">My quizzes</a>
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-light">Log out ({{ user.username }})</button>
+                </form>
+            {% else %}
+                <a class="nav-link" href="{% url 'login' %}">Host login</a>
+                <a class="btn btn-sm btn-light" href="{% url 'signup' %}">Sign up</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<main class="container pb-5" style="max-width: {% block width %}900px{% endblock %};">
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</main>
+
+<script>
+    function getCookie(name) {
+        const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return m ? decodeURIComponent(m[2]) : null;
+    }
+    function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

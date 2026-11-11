@@ -1,0 +1,13 @@
+body { background: #f4f5fb; min-height: 100vh; }
+.navbar-brand { font-weight: 700; letter-spacing: .3px; }
+.card { border: 0; border-radius: 14px; box-shadow: 0 2px 10px rgba(30, 30, 80, .07); }
+.btn { border-radius: 10px; }
+.room-code { font-size: 2.4rem; font-weight: 800; letter-spacing: .3rem; color: #4f46e5; }
+.timer-badge { font-size: 2rem; font-weight: 800; min-width: 4rem; }
+.timer-badge.low { color: #dc2626; }
+.option-btn { text-align: left; padding: .9rem 1rem; font-size: 1.05rem; }
+.option-btn.correct { background: #16a34a; color: #fff; border-color: #16a34a; }
+.option-btn.wrong { background: #dc2626; color: #fff; border-color: #dc2626; }
+.option-btn.chosen { outline: 3px solid #4f46e5; }
+.lb-row-1 td { font-weight: 700; background: #fff8e1 !important; }
+.progress { height: 8px; }

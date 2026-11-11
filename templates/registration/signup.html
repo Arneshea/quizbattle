@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Sign up{% endblock %}
+{% block width %}460px{% endblock %}
+{% block content %}
+<div class="card p-4">
+    <h4 class="mb-3 text-center">Create a host account</h4>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                {% if field.help_text %}<div class="form-text small">{{ field.help_text|safe }}</div>{% endif %}
+            </div>
+        {% endfor %}
+        <button class="btn btn-primary w-100">Sign up</button>
+    </form>
+</div>
+{% endblock %}
